@@ -575,7 +575,7 @@ document.getElementById('form-agendamento').addEventListener('submit', async fun
         
     } catch (erro) {
         console.error('Erro:', erro);
-        document.getElementById('alerta-msg-erro').innerText = 'Erro ao processar. Tente novamente.';
+        document.getElementById('alerta-msg-erro').innerText = 'Erro: ' + erro.message;
         document.getElementById('alerta-erro').style.display = 'block';
     }
     
