@@ -604,8 +604,10 @@ section{
     font-size:48px;
     line-height:1.05;
     margin-bottom:20px;
+    color:#f3c800;
     background:linear-gradient(90deg, #f3c800, #ffd54f);
     -webkit-background-clip:text;
+    background-clip:text;
     -webkit-text-fill-color:transparent;
     text-shadow:0 0 18px rgba(243,200,0,0.18);
 }
