@@ -1,86 +1,125 @@
 <?php
-// Inicia buffer de saída para que possamos enviar apenas JSON ao final.
+// ================= processar_agendamento.php =================
 ob_start();
-
-// Não mostra erros diretamente no navegador para evitar vazamento de dados.
 ini_set('display_errors', 0);
-
-// Define o cabeçalho de resposta como JSON UTF-8.
 header('Content-Type: application/json; charset=utf-8');
 
-// Cria a conexão com o banco de dados MySQL.
-$conexao = new mysqli("localhost", "Gabriel17", "17092007", "barbearia_adrian_souza");
+include("conexao.php");
 
-// Verifica se a conexão falhou e retorna erro em JSON.
-if ($conexao->connect_error) {
+// ── Array estruturado de serviços com preço e desconto ────────────────────────
+$servicosDisponiveis = [
+    'Corte Premium'      => ['preco' => 45.00,  'desconto' => 0],
+    'Barba Premium'      => ['preco' => 35.00,  'desconto' => 0],
+    'Combo Completo'     => ['preco' => 70.00,  'desconto' => 10],
+    'Plano Profissional' => ['preco' => 120.00, 'desconto' => 15],
+];
+
+// ── Função — aplica desconto e retorna preço final ────────────────────────────
+function aplicarDesconto($preco, $percentual) {
+    if ($percentual <= 0) {
+        return $preco;
+    }
+    return $preco - ($preco * $percentual / 100);
+}
+
+// ── Função — valida se o preço é positivo ─────────────────────────────────────
+function precoValido($preco) {
+    if ($preco <= 0) {
+        return false;
+    }
+    return true;
+}
+
+// ── Função — valida campos obrigatórios ───────────────────────────────────────
+function validarCampos($nome, $data, $horario, $servico) {
+    if (empty($nome) || empty($data) || empty($horario) || empty($servico)) {
+        return 'Preencha todos os campos.';
+    }
+    return null;
+}
+
+// ── Função — valida regra de negócio do serviço ───────────────────────────────
+function validarServico($servico, $tabela) {
+    if (!isset($tabela[$servico])) {
+        return 'Servico invalido.';
+    }
+    if ($tabela[$servico]['preco'] <= 0) {
+        return 'Servico com preco invalido.';
+    }
+    return null;
+}
+
+// ── Função — filtra serviços com desconto ─────────────────────────────────────
+function filtrarServicosComDesconto($tabela) {
+    $resultado = [];
+    foreach ($tabela as $nome => $dados) {
+        if ($dados['desconto'] > 0) {
+            $resultado[] = $nome;
+        }
+    }
+    return $resultado;
+}
+
+// ── Função — formata data e hora ──────────────────────────────────────────────
+function formatarDataHora($data, $horario) {
+    return $data . ' ' . $horario . ':00';
+}
+
+// ── Função — responde em JSON e encerra ───────────────────────────────────────
+function responder($sucesso, $mensagem, $extra = []) {
     ob_clean();
-    echo json_encode([
-        'sucesso' => false,
-        'mensagem' => 'Erro de conexao: ' . $conexao->connect_error
-    ]);
+    echo json_encode(array_merge(['sucesso' => $sucesso, 'mensagem' => $mensagem], $extra));
     exit;
 }
 
-// Recebe os dados enviados pelo formulário via POST e remove espaços extras.
+// ── Receber dados do formulário ───────────────────────────────────────────────
 $nome    = trim($_POST['agenda-name']    ?? '');
 $data    = trim($_POST['agenda-date']    ?? '');
 $horario = trim($_POST['agenda-time']    ?? '');
 $servico = trim($_POST['agenda-service'] ?? '');
 
-// Verifica se todos os campos obrigatórios foram preenchidos.
-if (empty($nome) || empty($data) || empty($horario) || empty($servico)) {
-    ob_clean();
-    echo json_encode([
-        'sucesso' => false,
-        'mensagem' => 'Preencha todos os campos.'
-    ]);
-    exit;
+// ── Validar campos ────────────────────────────────────────────────────────────
+$erroCampos = validarCampos($nome, $data, $horario, $servico);
+if ($erroCampos !== null) {
+    responder(false, $erroCampos);
 }
 
-// Combina data e horário no formato compatível com o banco.
-$dataHora = $data . ' ' . $horario . ':00';
+// ── Validar serviço ───────────────────────────────────────────────────────────
+$erroServico = validarServico($servico, $servicosDisponiveis);
+if ($erroServico !== null) {
+    responder(false, $erroServico);
+}
 
-// Busca o ID do serviço informado no banco, apenas se ele estiver ativo.
+$dataHora            = formatarDataHora($data, $horario);
+$desconto            = $servicosDisponiveis[$servico]['desconto'];
+$servicosComDesconto = filtrarServicosComDesconto($servicosDisponiveis);
+
+// ── Buscar ID do serviço no banco ─────────────────────────────────────────────
 $stmt = $conexao->prepare("SELECT id FROM servicos WHERE nome = ? AND ativo = 1");
 $stmt->bind_param("s", $servico);
 $stmt->execute();
 $res = $stmt->get_result();
 $stmt->close();
 
-// Se não encontrou o serviço, retorna erro.
 if ($res->num_rows === 0) {
-    ob_clean();
-    echo json_encode([
-        'sucesso' => false,
-        'mensagem' => 'Servico nao encontrado.'
-    ]);
-    exit;
+    responder(false, 'Servico nao encontrado no banco.');
 }
 
-// Obtém o ID do serviço encontrado para usar na tabela de agendamentos.
 $servicoId = $res->fetch_assoc()['id'];
 
-// Prepara a inserção do novo agendamento com status pendente.
-$stmt = $conexao->prepare(
-    "INSERT INTO agendamentos (cliente_nome, servico_id, data_hora, status) VALUES (?, ?, ?, 'pendente')"
-);
+// ── Inserir agendamento ───────────────────────────────────────────────────────
+$stmt = $conexao->prepare("INSERT INTO agendamentos (cliente_nome, servico_id, data_hora, status) VALUES (?, ?, ?, 'pendente')");
 $stmt->bind_param("sis", $nome, $servicoId, $dataHora);
 
-// Executa a inserção e retorna resposta em JSON de acordo com o resultado.
 if ($stmt->execute()) {
-    ob_clean();
-    echo json_encode([
-        'sucesso' => true,
-        'mensagem' => 'Agendamento realizado com sucesso!'
+    responder(true, 'Agendamento realizado com sucesso!', [
+        'agendamento_id'    => $conexao->insert_id,
+        'desconto_aplicado' => $desconto . '%',
+        'servicos_promocao' => $servicosComDesconto,
     ]);
 } else {
-    ob_clean();
-    echo json_encode([
-        'sucesso' => false,
-        'mensagem' => 'Erro ao salvar: ' . $stmt->error
-    ]);
+    responder(false, 'Erro ao salvar: ' . $stmt->error);
 }
 
-// Fecha statement e conexão com o banco.
 $stmt->close();
 $conexao->close();

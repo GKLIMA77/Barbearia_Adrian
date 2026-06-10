@@ -1,5 +1,56 @@
 <!-- ================= index.php ================= -->
 
+<?php
+// ── Conexão com o Banco de Dados (arquivo separado) ─────────────────────────
+include __DIR__ . '/conexao.php';
+
+// ── Array estruturado de descontos por serviço ────────────────────────────────
+$descontos = [
+    'Corte Premium'      => 0,
+    'Barba Premium'      => 0,
+    'Combo Completo'     => 10,
+    'Plano Profissional' => 15,
+];
+
+// ── Função com parâmetro e return — aplica desconto ──────────────────────────
+function aplicarDesconto($preco, $percentual) {
+    if ($percentual <= 0) {
+        return $preco;
+    }
+    return $preco - ($preco * $percentual / 100);
+}
+
+// ── Função de validação de regra de negócio ───────────────────────────────────
+function precoValido($preco) {
+    if ($preco <= 0) {
+        return false;
+    }
+    return true;
+}
+
+// ── Buscar serviços do banco ──────────────────────────────────────────────────
+$resultado = $conexao->query("SELECT * FROM servicos WHERE ativo = 1 ORDER BY preco ASC");
+
+$servicos = [];
+while ($linha = $resultado->fetch_assoc()) {
+    $servicos[] = $linha;
+}
+
+// ── Buscar agendamentos recentes do banco ─────────────────────────────────────
+$resAgendamentos = $conexao->query(
+    "SELECT a.cliente_nome, s.nome AS servico_nome, a.data_hora, a.status
+     FROM agendamentos a
+     JOIN servicos s ON s.id = a.servico_id
+     ORDER BY a.criado_em DESC
+     LIMIT 3"
+);
+
+$agendamentosRecentes = [];
+while ($linha = $resAgendamentos->fetch_assoc()) {
+    $agendamentosRecentes[] = $linha;
+}
+?>
+
 <?php include("header.php"); ?>
 
 <!-- ================= HERO ================= -->
@@ -80,127 +131,59 @@ degradê, barba e estilo masculino premium.
 
 <div class="row g-4 justify-content-center">
 
-<!-- BÁSICO -->
+<?php
+// ── FOREACH — percorre serviços vindos do banco ───────────────────────────────
+foreach ($servicos as $sv):
+    $desc       = $descontos[$sv['nome']] ?? 0;
+    $precoFinal = aplicarDesconto((float)$sv['preco'], $desc);
+    $destaque   = ($sv['nome'] === 'Plano Profissional');
 
-<div class="col-lg-4">
+    // IF — valida se o preço é válido antes de exibir
+    if (!precoValido((float)$sv['preco'])) continue;
+?>
 
-<div class="card plano-card h-100 border-0">
+<div class="col-lg-3 col-md-6">
+<div class="card plano-card h-100 border-0 <?php if ($destaque) echo 'plano-destaque position-relative'; ?>">
 
-<div class="card-body p-5 text-center">
+<?php if ($destaque): ?>
+<div class="mais-popular">★ MAIS POPULAR</div>
+<?php endif; ?>
 
-<p class="plano-titulo">BÁSICO</p>
+<div class="card-body p-4 text-center">
 
-<h3 class="preco-plano">R$ 80</h3>
-
-<p class="plano-descricao">
-Corte rápido e elegante para o dia a dia.
+<p class="plano-titulo <?php if ($destaque) echo 'destaque-titulo'; ?>">
+  <?php echo htmlspecialchars($sv['nome']); ?>
 </p>
 
-<ul class="plano-list list-unstyled mt-4 mb-5">
-
-<li><i class="fa-solid fa-check"></i> Corte masculino</li>
-
-<li><i class="fa-solid fa-check"></i> 2 Cortes no mês</li>
-
-<li><i class="fa-solid fa-check"></i> Atendimento ágil</li>
-
-</ul>
-
-<a href="#agenda" class="btn btn-warning plano-btn">
-Contratar Agora
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- PROFISSIONAL -->
-
-<div class="col-lg-4">
-
-<div class="card plano-card plano-destaque h-100 border-0 position-relative">
-
-<div class="mais-popular">
-★ MAIS POPULAR
-</div>
-
-<div class="card-body p-5 text-center">
-
-<p class="plano-titulo destaque-titulo">
-PROFISSIONAL
-</p>
-
-<h3 class="preco-plano destaque-preco">
-R$ 120
+<h3 class="preco-plano <?php if ($destaque) echo 'destaque-preco'; ?>">
+  R$ <?php echo number_format((float)$sv['preco'], 2, ',', '.'); ?>
 </h3>
 
-<p class="plano-descricao">
-Serviço completo com barba modelada
-e acabamento VIP.
-</p>
+<?php if ($desc > 0): ?>
+  <!-- Badge Bootstrap — componente 1 -->
+  <span class="badge bg-success mb-2"><?php echo $desc; ?>% de desconto</span>
+  <p style="font-size:.85rem; color:#aaa;">
+    Por R$ <?php echo number_format($precoFinal, 2, ',', '.'); ?>
+  </p>
+<?php endif; ?>
 
-<ul class="plano-list list-unstyled mt-4 mb-5">
-
-<li><i class="fa-solid fa-check"></i> 3 Cortes no mês</li>
-
-<li><i class="fa-solid fa-check"></i> Sobrancelha</li>
-
-<li><i class="fa-solid fa-check"></i> Desconto especial</li>
-
-<li><i class="fa-solid fa-check"></i> Atendimento prioritário</li>
-
+<ul class="plano-list list-unstyled mt-3 mb-4">
+  <li><i class="fa-solid fa-check"></i> Atendimento premium</li>
+  <li><i class="fa-solid fa-check"></i> Profissionais especializados</li>
+  <?php if ($destaque): ?>
+  <li><i class="fa-solid fa-check"></i> Atendimento prioritário</li>
+  <?php endif; ?>
 </ul>
 
-<a href="#agenda" class="btn btn-warning plano-btn destaque-btn">
-Contratar Agora
+<a href="#agenda" class="btn btn-warning plano-btn <?php if ($destaque) echo 'destaque-btn'; ?>">
+  Contratar Agora
 </a>
 
 </div>
-
+</div>
 </div>
 
-</div>
-
-<!-- ELITE -->
-
-<div class="col-lg-4">
-
-<div class="card plano-card h-100 border-0">
-
-<div class="card-body p-5 text-center">
-
-<p class="plano-titulo">ELITE</p>
-
-<h3 class="preco-plano">R$ 150</h3>
-
-<p class="plano-descricao">
-Experiência premium com styling completo
-e extras exclusivos.
-</p>
-
-<ul class="plano-list list-unstyled mt-4 mb-5">
-
-<li><i class="fa-solid fa-check"></i> 4 Cortes no mês</li>
-
-<li><i class="fa-solid fa-check"></i> Sobrancelha</li>
-
-<li><i class="fa-solid fa-check"></i> Barba Moderada</li>
-
-<li><i class="fa-solid fa-check"></i> Brinde exclusivo</li>
-
-</ul>
-
-<a href="#agenda" class="btn btn-warning plano-btn">
-Contratar Agora
-</a>
-
-</div>
-
-</div>
-
-</div>
+<?php endforeach; ?>
 
 </div>
 
@@ -355,15 +338,15 @@ Confirmar agendamento
 <div class="galeria-grid">
 
 <div class="galeria-item">
-<img src="imagens/LUZES.png" alt="Cliente 1">
+<img src="imagens/corte1.png" alt="Cliente 1">
 </div>
 
 <div class="galeria-item">
-<img src="imagens/BUZZ CUT.png" alt="Cliente 2">
+<img src="imagens/corte2.png" alt="Cliente 2">
 </div>
 
 <div class="galeria-item">
-<img src="imagens/FELIPE.png" alt="Cliente 3">
+<img src="imagens/corte3.png" alt="Cliente 3">
 </div>
 
 </div>
@@ -587,5 +570,56 @@ document.getElementById('form-agendamento').addEventListener('submit', async fun
 // Definir data mínima como hoje
 document.getElementById('agenda-date').min = new Date().toISOString().split('T')[0];
 </script>
+
+<!-- ================= AGENDAMENTOS RECENTES (dados do banco) ================= -->
+
+<section class="feedbacks" id="recentes">
+<div class="container">
+
+<div class="section-topo">
+  <p class="mini-texto">BANCO DE DADOS</p>
+  <h2>Agendamentos Recentes</h2>
+</div>
+
+<div class="row g-4 justify-content-center">
+
+<?php
+// ── FOREACH — exibe agendamentos vindos do banco ──────────────────────────────
+foreach ($agendamentosRecentes as $ag):
+
+  // IF — define cor do badge conforme status
+  if ($ag['status'] === 'confirmado') {
+      $cor = 'success';
+  } elseif ($ag['status'] === 'pendente') {
+      $cor = 'warning text-dark';
+  } else {
+      $cor = 'danger';
+  }
+
+  $dataFormatada = date('d/m/Y H:i', strtotime($ag['data_hora']));
+?>
+
+<div class="col-md-4">
+<div class="card feedback-card border-0 h-100">
+<div class="card-body p-4 text-center">
+
+  <h5><?php echo htmlspecialchars($ag['cliente_nome']); ?></h5>
+  <p class="text-secondary"><?php echo htmlspecialchars($ag['servico_nome']); ?></p>
+  <p style="font-size:.85rem; color:#aaa;"><?php echo $dataFormatada; ?></p>
+
+  <!-- Badge Bootstrap — componente 2 -->
+  <span class="badge bg-<?php echo $cor; ?>">
+    <?php echo ucfirst($ag['status']); ?>
+  </span>
+
+</div>
+</div>
+</div>
+
+<?php endforeach; ?>
+
+</div>
+</div>
+</section>
 
 <?php include("footer.php"); ?>
