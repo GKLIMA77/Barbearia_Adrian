@@ -42,7 +42,7 @@ $resAgendamentos = $conexao->query(
      FROM agendamentos a
      JOIN servicos s ON s.id = a.servico_id
      ORDER BY a.criado_em DESC
-     LIMIT 3"
+     "
 );
 
 $agendamentosRecentes = [];
@@ -144,10 +144,6 @@ foreach ($servicos as $sv):
 
 <div class="col-lg-3 col-md-6">
 <div class="card plano-card h-100 border-0 <?php if ($destaque) echo 'plano-destaque position-relative'; ?>">
-
-<?php if ($destaque): ?>
-<div class="mais-popular">★ MAIS POPULAR</div>
-<?php endif; ?>
 
 <div class="card-body p-4 text-center">
 
@@ -578,7 +574,7 @@ document.getElementById('agenda-date').min = new Date().toISOString().split('T')
 
 <div class="section-topo">
   <p class="mini-texto">BANCO DE DADOS</p>
-  <h2>Agendamentos Recentes</h2>
+  <h2>Agendamentos</h2>
 </div>
 
 <div class="row g-4 justify-content-center">

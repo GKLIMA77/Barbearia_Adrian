@@ -261,6 +261,8 @@ section{
     display:flex;
     flex-direction:column;
     gap:0;
+    text-align:center;
+    align-items:center;
 }
 
 .sobre-texto h2{
