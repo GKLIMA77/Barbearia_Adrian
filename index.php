@@ -3,6 +3,7 @@
 <?php
 // ── Conexão com o Banco de Dados (arquivo separado) ─────────────────────────
 include __DIR__ . '/conexao.php';
+include __DIR__ . '/funcoes.php';
 
 // ── Array estruturado de descontos por serviço ────────────────────────────────
 $descontos = [
@@ -319,36 +320,6 @@ Confirmar agendamento
 
 </section>
 
-<!-- ================= GALERIA ================= -->
-
-<section class="galeria" id="galeria">
-
-<div class="section-topo">
-
-<p class="mini-texto">GALERIA</p>
-
-<h2>Nossos Trabalhos</h2>
-
-</div>
-
-<div class="galeria-grid">
-
-<div class="galeria-item">
-<img src="imagens/corte1.png" alt="Cliente 1">
-</div>
-
-<div class="galeria-item">
-<img src="imagens/corte2.png" alt="Cliente 2">
-</div>
-
-<div class="galeria-item">
-<img src="imagens/corte3.png" alt="Cliente 3">
-</div>
-
-</div>
-
-</section>
-
 <!-- ================= FEEDBACKS ================= -->
 
 <section class="feedbacks" id="feedbacks">
@@ -500,7 +471,7 @@ Clique abaixo e fale diretamente
 pelo WhatsApp.
 </p>
 
-<a href="https://api.whatsapp.com/send?phone=5544999990000&text=Olá%20Adrian,%20gostaria%20de%20agendar%20um%20horário!" 
+<a href="https://api.whatsapp.com/send?phone=5544997306220&text=Olá%20Adrian,%20gostaria%20de%20agendar%20um%20horário!" 
    class="btn-principal" target="_blank">
 Chamar no WhatsApp
 </a>
@@ -567,7 +538,7 @@ document.getElementById('form-agendamento').addEventListener('submit', async fun
 document.getElementById('agenda-date').min = new Date().toISOString().split('T')[0];
 </script>
 
-<!-- ================= AGENDAMENTOS RECENTES (dados do banco) ================= -->
+<!-- ================= AGENDAMENTOS (dados do banco) ================= -->
 
 <section class="feedbacks" id="recentes">
 <div class="container">
@@ -615,6 +586,13 @@ foreach ($agendamentosRecentes as $ag):
 <?php endforeach; ?>
 
 </div>
+
+<div class="section-topo" style="margin-top: 60px; text-align: center;">
+  <p class="mini-texto">AGENDEMENTOS DE HOJE</p>
+  <h2>Agendamentos de Hoje</h2>
+  <p style="color: #ccc; margin-top: 20px;">Não há nenhum agendamento para hoje.</p>
+</div>
+
 </div>
 </section>
 

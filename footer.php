@@ -5,7 +5,7 @@
     <p class="footer-brand">💈 Adrian Souza</p>
     
     <div class="footer-social">
-      <a href="https://wa.me/5544988106699" target="_blank" title="WhatsApp">
+      <a href="https://wa.me/5544997306220" target="_blank" title="WhatsApp">
         <i class="fab fa-whatsapp"></i>
       </a>
       <a href="https://instagram.com/souza_barbershopp" target="_blank" title="Instagram">
