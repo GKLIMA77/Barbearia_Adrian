@@ -261,6 +261,8 @@ section{
     display:flex;
     flex-direction:column;
     gap:0;
+    text-align:center;
+    align-items:center;
 }
 
 .sobre-texto h2{
@@ -969,4 +971,48 @@ footer{
         height:420px;
     }
 
+}
+
+/* ================= AGENDAMENTOS DE HOJE ================= */
+
+.agendamentos-hoje{
+    background:#081521;
+    color:#f3f3f3;
+    padding:80px 8%;
+}
+
+.agendamentos-hoje .section-topo .mini-texto{
+    color:#869db8;
+}
+
+.agendamentos-hoje .section-topo h2{
+    color:#ffffff;
+    text-shadow:0 0 10px rgba(255,255,255,0.1);
+    background:none;
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:initial;
+}
+
+.agendamentos-hoje table{
+    width:100%;
+    border-collapse:collapse;
+    background:rgba(10,21,33,0.95);
+    color:#f3f3f3;
+    margin-top:20px;
+}
+
+.agendamentos-hoje th,
+.agendamentos-hoje td{
+    border:1px solid rgba(255,255,255,0.08);
+    padding:14px;
+}
+
+.agendamentos-hoje th{
+    background:rgba(12,21,35,0.95);
+    color:#f3f3f3;
+}
+
+.agendamentos-hoje td{
+    color:#dfe7f2;
 }
