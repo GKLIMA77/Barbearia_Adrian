@@ -544,7 +544,6 @@ document.getElementById('agenda-date').min = new Date().toISOString().split('T')
 <div class="container">
 
 <div class="section-topo">
-  <p class="mini-texto">BANCO DE DADOS</p>
   <h2>Agendamentos</h2>
 </div>
 
@@ -588,7 +587,6 @@ foreach ($agendamentosRecentes as $ag):
 </div>
 
 <div class="section-topo" style="margin-top: 60px; text-align: center;">
-  <p class="mini-texto">AGENDEMENTOS DE HOJE</p>
   <h2>Agendamentos de Hoje</h2>
   <p style="color: #ccc; margin-top: 20px;">Não há nenhum agendamento para hoje.</p>
 </div>

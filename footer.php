@@ -15,8 +15,6 @@
         <i class="fab fa-facebook"></i>
       </a>
     </div>
-
-    <p class="footer-copy">&copy; <?php echo date('Y'); ?> Barbearia Adrian Souza. Todos os direitos reservados.</p>
   </div>
 </footer>
 
