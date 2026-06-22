@@ -73,10 +73,10 @@ function responder($sucesso, $mensagem, $extra = []) {
 }
 
 // ── Receber dados do formulário ───────────────────────────────────────────────
-$nome    = trim($_POST['agenda-name']    ?? '');
-$data    = trim($_POST['agenda-date']    ?? '');
-$horario = trim($_POST['agenda-time']    ?? '');
-$servico = trim($_POST['agenda-service'] ?? '');
+$nome    = trim($_POST['agenda-nome']    ?? '');
+$data    = trim($_POST['agenda-data']    ?? '');
+$horario = trim($_POST['agenda-horario']    ?? '');
+$servico = trim($_POST['agenda-servico'] ?? '');
 
 // ── Validar campos ────────────────────────────────────────────────────────────
 $erroCampos = validarCampos($nome, $data, $horario, $servico);
